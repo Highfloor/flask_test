@@ -1,9 +1,9 @@
 '''
-    데이터베이스 접속 후 쿼리 수행
+    데이터베이스 접속후 쿼리 수행 + 파라미터 전달
 '''
 import pymysql as my
-
-connection = None
+def select_login():
+    connection = None
 try:
     connection = my.connect(host='localhost', #127.0.0.0 
                             #port= 3306,
@@ -27,11 +27,18 @@ try:
         cursor.execute(sql)
         row = cursor.fetchone()
         print(row['name'])
-
+        pass
 except Exception as e:
-    print('접속 오류', e)
-else: 
-    print('접속 문제 없음')
+        print('접속 오류',e)
+else:
+        print('접속시 문제없음')
 finally:
-    if connection:
-        connection.close()
+        # 2. 접속 종료(I/o)->close()
+        if connection:
+            connection.close()
+        print('접속 종료 성공')
+
+if __name__ == '__main__':
+    # d4 개발자의 테스트 코드
+    # f5 개발자가 사용할때는 작동안함
+    select_login()
