@@ -8,4 +8,4 @@ from service.controllers import bp_main as main
 # ~/main
 @main.route('/')
 def home():
-    return 'main 홈'
+    return render_template('index.html')
