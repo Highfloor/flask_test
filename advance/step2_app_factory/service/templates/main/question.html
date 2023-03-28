@@ -6,11 +6,12 @@
             {# csrf 토큰 #}
             {{ wtf.csrf_token}}
             {# 폼 유효성 검사후 오류 내용 출력(생략가능) #}
-            <div role="alert">
+            <div class="alert alert-danger" role="alert">
                 {% for field,errors in wtf.errors.items() %}
-                <b>{{wtf.get(field).label}}</b>
+                <b>{{wtf[field].label}}</b>
                 <ol>  
                     {% for err in errors %}
+                    <li>{{err}}</li>
                     {% endfor %}
                 {% endfor %}
                 </ol>  
