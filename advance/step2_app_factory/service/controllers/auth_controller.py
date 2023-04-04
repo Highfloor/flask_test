@@ -1,5 +1,5 @@
 '''
-    메인 서비스를 구축하는 컨트롤러
+    인증 서비스를 구축하는 컨트롤러
     - 라우트:URL과 이를 처리할 함수 연계
     - 비지니스 로직: 사용자가 요청하는 주 내용을 처리하는 곳
 '''
@@ -10,6 +10,8 @@ from datetime import datetime,timedelta
 # flask객체 획득
 from flask import current_app
 import jwt
+
+import bcrypt
 
 # ~/auth
 @auth.route('/')
@@ -47,8 +49,15 @@ def login():
 def logout():
     return 'auth logout'
 
-@auth.route('/sign up')
+@auth.route('/signup')
 def signup():
+    # TODO : 비밀번호 암호화
+    password='1234'
+    # 암호화된 값은 디비에 패스워드 컬럼에 저장
+    b = bcrypt.hashpw(password.encode('utf-8'),bcrypt.gensalt())
+    # 확인및 복호화
+    # bcrypt.checkpw() => 이것으로 암호가 일치하는지만 체크해서 로그인시 활용
+    print (password,b,bcrypt.checkpw(password.encode('utf-8'),b ) )
     return 'auth sign up'
 
 @auth.route('/delete')
