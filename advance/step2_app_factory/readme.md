@@ -122,13 +122,38 @@
     # sqlalchemy 추가 설정
     SQLALCHEMY__TRACK_MODIFICATIONS=False
 
-- 데이터베이스 생성
+- 데이터베이스 생성,초기화(최초1회)
     - FLASK_APP = service은 없어도 되는데,이 앱은 app or wsfi로 시작하는 엔트리가 없어서 별도로 지정해야한다
     - flask --app service db init
+        - sqlite: 소형 데이터베이스,스마트폰에 사용하는 DB 이 경우에는 데이터베이스 생성을 자동으로 해줌,파일럿 형태에서 사용
+        - mysql 같은 데이터베이스(케이스별로 상이)는 실제로 생성 안됨
     - migrations 폴더가 생긴다(내부는 자동으로 만들어지는 구조이므로,관여하지않는다),단 version밑으로 수정할때 마다 새로운 버전의 DB관련 생성된다
     - 모델(테이블)생성 ,변경
+        - model > models.py에 테이블 관련 내용 기술
+        - service > __init__.py
+            - from .model import models: 주석해제,신규작성
         - flask --app service db migrate
+        -   +-----------------+
+            | Tables_in_my_db |
+            +-----------------+
+            | alembic_version |
+            +-----------------+
+            1 row in set (0.000 sec)
     - 모델(테이블)생성,변경후 데이터베이스에 적용
         - flask --app service db upgrade
     - 컨테이너 이미지 생성시 
         - 위의 명령들 3개를 차례대로 수행해서 데이터베이스 초기화, 생성 과정을 수행
+
+    - 필요한 기능들 시뮬레이션
+        - DBA는 SQL문을 작성해서 쿼리를 구현
+        - ORM에서는  shell열어서 파이썬 코드로 구현
+        - flask --app service shell
+            - 질문 등록
+                '''
+                    q1 = Question(title="질문1",content="내용1",reg_date=datetime.now())
+                    db.session.add(q1)
+                    db.session.commit()
+                '''
+            - 질문 조화
+            - 답변 등록
+                ...
