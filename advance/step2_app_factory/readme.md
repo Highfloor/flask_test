@@ -106,3 +106,29 @@
     - sqlalchemy , flask-migrate
 - 설치
     - pip install sqlalchemy flask-migrate
+
+- 코드 작성
+    - db.init_app(app)
+      migrate.init_app(app,db)
+- 환경변수
+  - DB_PROTOCAL="mysql+pymysql"
+    DB_USER = "root"
+    DB_PASSWORD="12341234"
+    DB_HOST="127.0.0.1"
+    DB_PORT=3306
+    DB_DATABASE = "my_db" # 새로 만들, 이 서비스에서 사용한 데이터베이스명
+    # 이 환경 변수는 migrate가 필수로 요구하는 환경변수
+    SQLALCHEMY_DATABASE_URI= f"{DB_PROTOCAL}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
+    # sqlalchemy 추가 설정
+    SQLALCHEMY__TRACK_MODIFICATIONS=False
+
+- 데이터베이스 생성
+    - FLASK_APP = service은 없어도 되는데,이 앱은 app or wsfi로 시작하는 엔트리가 없어서 별도로 지정해야한다
+    - flask --app service db init
+    - migrations 폴더가 생긴다(내부는 자동으로 만들어지는 구조이므로,관여하지않는다),단 version밑으로 수정할때 마다 새로운 버전의 DB관련 생성된다
+    - 모델(테이블)생성 ,변경
+        - flask --app service db migrate
+    - 모델(테이블)생성,변경후 데이터베이스에 적용
+        - flask --app service db upgrade
+    - 컨테이너 이미지 생성시 
+        - 위의 명령들 3개를 차례대로 수행해서 데이터베이스 초기화, 생성 과정을 수행
