@@ -91,69 +91,149 @@
     - XXX : 내용
         - 이부분은 큰 문제점, 오류를 가지고 있다
 
-# 데이터베이스 연동
-    - pool(풀링 기법)
-        - 백엔드 서버가 가동하면, 백엔드와 데이터베이스간 일정량의 커넥션을 미리 맺어서
-        - 큐(Queue:먼저 들어간 데이터가 먼저 나온다) 구조에 담아서 관리
-        - 접속과 해제라는 반복 작업에 따른 응답시간 지연원인을 제거, 일정량의 동접이 발생했을때, 안정적인 처리 속도 제공
-        - sqlalchemy
-    - orm 방식
-        - 객체지향방식으로 코드에서 데이터베이스 연동, 데이터처리등을 관리
-        - 원칙적으로는 SQL을 몰라도 처리가능
-            - 데이터베이스 벤더가 교체되더라도 동일하게 작동
-    - 단점,
+- pool(풀링기법)
+    - 백엔드 서버가 가동하면, 백엔드와 데이터베이스간 일정량의 커넥션을 미리 맺어서
+    - 큐(Queue:먼저들어간 데이터가 먼저 나온다)구조 담아서 관리
+    - 접속과 해제라는 반복 작업에 따른 응담시간지연원인을 제거, 일정량의 동접이 발생했을대, 안정적인 처리속도 제공
+    - sqlalchemy
+- orm 방식
+    - 객체지향방식으로 코드에서 데이터베이스 연동, 데이터처리등을 관리
+    - 원칙적으로는 SQL을 몰라도 처리가능
+        - 데이터베이스 밴더가 교체되더라도 동일하게 작동
+    - 단점, 
         - 쿼리가 최적화 되었다고 볼수 없다 -> 기계적인 생성
-    - sqlalchemy , flask-migrate
+    - sqlalchemy, flask-migrate
 - 설치
-    - pip install sqlalchemy flask-migrate
-
+    - pip install sqlalchemy  flask-migrate
 - 코드 작성
-    - db.init_app(app)
-      migrate.init_app(app,db)
-- 환경변수
-  - DB_PROTOCAL="mysql+pymysql"
-    DB_USER = "root"
-    DB_PASSWORD="12341234"
-    DB_HOST="127.0.0.1"
-    DB_PORT=3306
-    DB_DATABASE = "my_db" # 새로 만들, 이 서비스에서 사용한 데이터베이스명
-    # 이 환경 변수는 migrate가 필수로 요구하는 환경변수
-    SQLALCHEMY_DATABASE_URI= f"{DB_PROTOCAL}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
-    # sqlalchemy 추가 설정
-    SQLALCHEMY__TRACK_MODIFICATIONS=False
+    ```
+        from flask_sqlalchemy import SQLAlchemy
+        from flask_migrate import Migrate
 
-- 데이터베이스 생성,초기화(최초1회)
-    - FLASK_APP = service은 없어도 되는데,이 앱은 app or wsfi로 시작하는 엔트리가 없어서 별도로 지정해야한다
-    - flask --app service db init
-        - sqlite: 소형 데이터베이스,스마트폰에 사용하는 DB 이 경우에는 데이터베이스 생성을 자동으로 해줌,파일럿 형태에서 사용
-        - mysql 같은 데이터베이스(케이스별로 상이)는 실제로 생성 안됨
-    - migrations 폴더가 생긴다(내부는 자동으로 만들어지는 구조이므로,관여하지않는다),단 version밑으로 수정할때 마다 새로운 버전의 DB관련 생성된다
-    - 모델(테이블)생성 ,변경
+        db = SQLAlchemy()
+        migrate = Migrate()
+        ...
+        db.init_app( app )
+        migrate.init_app( app, db )
+    ```
+
+    ```
+        # 환경변수 추가
+        # ORM 처리응 위한 환경변수 설정,(임의설정)
+        DB_PROTOCAL = "mysql+pymysql"
+        DB_USER     = "root"
+        DB_PASSWORD = "12341234"
+        DB_HOST     = "127.0.0.1"
+        DB_PORT     = 3306
+        DB_DATABASE = "my_db" # 새로 만들, 이 서비스에서 사용한 데이터베이스명
+
+        # 이 환경변수는 migrate가 필수로 요구하는 환경변수
+        SQLALCHEMY_DATABASE_URI=f"{DB_PROTOCAL}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_DATABASE}"
+        # sqlalchemy 추가 설정
+        SQLALCHEMY_TRACK_MODIFICATIONS=False
+    ```
+    - 데이터 베이스 생성, 초기화 (최초 1회)
+        - --app service 은 없어도 되는데, 이 앱은 app or wsfi로 시작하는 엔트리가 없어서 별도로 지정해야한다
+        - flask --app service db init 
+            - sqlite : 소형데이터베이스, 스마트폰에 사용하는 DB 이 경우에는 데이터베이스 생성을 자동으로 해줌, 파일럿 형태에서 사용
+            - mysql 같은 데이터베이스(케이스별로 상이)는 실제로는 생성 않됨
+
+        - migrations 폴더가 생긴다(내부는 자동으로 만드어지는 구조이므로, 관여하지 않는다), 단 versions 밑으로 수정할때마다 새로운 버전의 DB 관련 생성된다
+    
+    - 모델(테이블) 생성, 변경
         - model > models.py에 테이블 관련 내용 기술
-        - service > __init__.py
-            - from .model import models: 주석해제,신규작성
+        - service>__init__.py
+            - from .model import models : 주석해제, 신규작성
         - flask --app service db migrate
-        -   +-----------------+
-            | Tables_in_my_db |
-            +-----------------+
-            | alembic_version |
-            +-----------------+
-            1 row in set (0.000 sec)
-    - 모델(테이블)생성,변경후 데이터베이스에 적용
-        - flask --app service db upgrade
-    - 컨테이너 이미지 생성시 
-        - 위의 명령들 3개를 차례대로 수행해서 데이터베이스 초기화, 생성 과정을 수행
+            ```
+                +-----------------+
+                | Tables_in_my_db |
+                +-----------------+
+                | alembic_version |
+                +-----------------+
+                1 row in set (0.000 sec)
+            ```
 
-    - 필요한 기능들 시뮬레이션
-        - DBA는 SQL문을 작성해서 쿼리를 구현
-        - ORM에서는  shell열어서 파이썬 코드로 구현
-        - flask --app service shell
-            - 질문 등록
-                '''
-                    q1 = Question(title="질문1",content="내용1",reg_date=datetime.now())
-                    db.session.add(q1)
-                    db.session.commit()
-                '''
-            - 질문 조화
-            - 답변 등록
-                ...
+    - 모델(테이블) 생성, 변경후 데이터베이스에 적용
+        - flask --app service db upgrade
+    - 컨테이너 이미지 생성시
+        - 위의 명령들 3개를 차례대로 수행해서 데이터베이스 초기화, 생성과정을 수행
+
+- 필요한 기능들 시뮬레이션
+    - DBA는 sql문을 작성해서 쿼리 구현 
+    - ORM에서는 shell을 열어서 파이썬 코드로 구현
+    - flask --app service shell  
+        - 질문 등록
+            ```
+            from service.model.models import Question, Answer
+            from datetime import datetime                
+            from service import db
+            
+            q1 = Question(title="질문1", content="내용1", reg_date=datetime.now()) 
+            db.session.add( q1 ) 
+            db.session.commit()
+            ```
+        - 질문 조회 
+            ```
+            # 전체 데이터 조회 : select * from question;
+            qs = Question.query.all()
+            qs[0]
+            <Question 1>
+            qs[0].title
+            '질문1'
+            # id값을 넣어서 조회 : select * from question where id=1;
+            Question.query.get(1)
+            # 내용중에 '용' 문자열이 존재하면 다가져오시오
+            # select * from question where content like '%용%';
+            # %용, %용%, 용% <- 내용 검색
+            Question.query.filter( Question.content.like('%용%')).all()
+            ```
+        - 질문 수정
+            ```
+                q1 = Question.query.get(1)
+                # 변경하고 싶은 부분은 수정
+                # update question set title='질문1111111' where id=1;
+                q1.title = "질문1111111"
+                db.session.commit()
+            ```
+        - 질문 삭제
+            ```
+                q1 = Question.query.get(1)
+                # delete from question where id=1;
+                db.session.delete( q1 )
+                db.session.commit()
+            ```
+        - 답변 등록
+            ```
+                # 질문 2개 추가
+                # 질문 1개를 찾고 -> 답변을 등록
+                q2=Question.query.get(2)
+                # 답변 생성
+                a= 
+            ```
+         - 답변을 통해서 질문 찾기
+            ```
+                a.question
+            ```
+        - 질문을 통해서 답변 찾기
+            ```
+                # 역참조의 이름을 사용하여 답변들을 다 찾아온다
+                q2.answer_set
+            ```
+        - 질문을 삭제하면 답변도 다 삭제되는가?
+            ```
+                db.session.delete( q2 )
+                db.session.commit()
+                
+                # 답변의 참조 question_id 값만 무효화 되었다
+                # 작성자가 서로 다르므로, 삭제 권리는 없고, 참조만 제거
+                MariaDB [my_db]> select * from answer;
+    +----+-------------+----------------------------------+---------------------+
+    | id | question_id | content                          | reg_date            |
+    +----+-------------+----------------------------------+---------------------+
+    |  1 |        NULL | 질문에 대한 답변입니다           | 2023-04-05 13:13:50 |
+    +----+-------------+----------------------------------+---------------------+
+                # 본인  답변 삭제
+                db.session.delete( a )
+                db.session.commit()
+            ```
